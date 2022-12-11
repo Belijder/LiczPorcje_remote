@@ -25,12 +25,12 @@ struct DishRowView: View {
                     .fontWeight(.bold)
             }
             HStack {
-                Text("Kuba: \(dish.largerPortion.asStringWith1DecimalPlace())")
+                Text("Kuba: \(dish.largerPortion.asStringWithNoDecimalPlace())")
                     .font(.title)
                     .foregroundColor(.accentColor)
                     .fontWeight(.bold)
                 Spacer()
-                Text("Kami: \(dish.smallerPortion.asStringWith1DecimalPlace())")
+                Text("Kami: \(dish.smallerPortion.asStringWithNoDecimalPlace())")
                     .font(.title)
                     .foregroundColor(.accentColor)
                     .fontWeight(.bold)

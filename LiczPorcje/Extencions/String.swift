@@ -8,7 +8,7 @@
 import Foundation
 
 extension Double {
-    func asStringWith1DecimalPlace() -> String {
+    func asStringWithNoDecimalPlace() -> String {
         return String(format: "%.0f", self)
     }
 }

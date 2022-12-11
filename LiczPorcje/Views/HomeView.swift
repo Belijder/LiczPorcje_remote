@@ -11,28 +11,15 @@ struct HomeView: View {
     
     @StateObject var vm = HomeViewModel()
     
-    @State private var dishName = ""
-    @State private var portionsNumber = ""
-    @State private var dishWeight = ""
-    
-    @State private var isAbleToSave = false
     @State private var showSavedList = false
-    @State private var switchOnAnimation = true
     
     var body: some View {
         ZStack {
             Color.theme.background
             VStack {
                 inputSection
-                    .onChange(of: portionsNumber) { value in
-                        vm.calculatePortions(portionsNumber: portionsNumber, dishWeight: dishWeight)
-                        
-                    }
-                    .onChange(of: dishWeight) { newValue in
-                        vm.calculatePortions(portionsNumber: portionsNumber, dishWeight: dishWeight)
-                    }
-                    .onChange(of: dishName) { newValue in
-                        vm.setDishName(value: dishName)
+                    .onChange(of: vm.dishName) { newValue in
+                        vm.checkIfIsAbleToSave()
                     }
                 
                 outputInfo
@@ -69,8 +56,9 @@ extension HomeView {
                 Spacer()
                 
                 Button {
-                    showSavedList.toggle()
-                    isAbleToSave.toggle()
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        showSavedList = true
+                    }
                 } label: {
                     Image(systemName: showSavedList ? "xmark" : "list.bullet")
                         .font(.title)
@@ -90,12 +78,12 @@ extension HomeView {
                 Text("Nazwa dania")
                     .font(.headline)
                     .foregroundColor(.theme.accent)
-                TextField("Podaj nazwę dania...", text: $dishName)
-                    .font(dishName == "" ? .subheadline : .headline)
+                TextField("Podaj nazwę dania...", text: $vm.dishName)
+                    .font(vm.dishName == "" ? .subheadline : .headline)
                     .padding()
                     .background(Color.gray.opacity(0.1).cornerRadius(10))
                     .frame(maxWidth: .infinity)
-                    .foregroundColor(dishName == "" ? .theme.seconderyTextColor : .theme.accent)
+                    .foregroundColor(vm.dishName == "" ? .theme.seconderyTextColor : .theme.accent)
             }
             
             
@@ -104,12 +92,12 @@ extension HomeView {
                     Text("Waga dania (g)")
                         .font(.headline)
                         .foregroundColor(.theme.accent)
-                    TextField("Podaj wagę...", text: $dishWeight)
-                        .font(dishWeight == "" ? .subheadline : .headline)
+                    TextField("Podaj wagę...", text: $vm.dishWeightString)
+                        .font(vm.dishWeightString == "" ? .subheadline : .headline)
                         .padding()
                         .background(Color.gray.opacity(0.1).cornerRadius(10))
                         .frame(width: UIScreen.main.bounds.width/3, height: 55)
-                        .foregroundColor(dishWeight == "" ? .theme.seconderyTextColor : .theme.accent)
+                        .foregroundColor(vm.dishWeightString == "" ? .theme.seconderyTextColor : .theme.accent)
                         .keyboardType(.numberPad)
                 }
                 
@@ -119,12 +107,12 @@ extension HomeView {
                     Text("Liczba porcji")
                         .font(.headline)
                         .foregroundColor(.theme.accent)
-                    TextField("Podaj liczbę...", text: $portionsNumber)
-                        .font(portionsNumber == "" ? .subheadline : .headline)
+                    TextField("Podaj liczbę...", text: $vm.portionsNumberString)
+                        .font(vm.portionsNumberString == "" ? .subheadline : .headline)
                         .padding()
                         .background(Color.gray.opacity(0.1).cornerRadius(10))
                         .frame(width: UIScreen.main.bounds.width/3, height: 55)
-                        .foregroundColor(portionsNumber == "" ? .theme.seconderyTextColor : .theme.accent)
+                        .foregroundColor(vm.portionsNumberString == "" ? .theme.seconderyTextColor : .theme.accent)
                         .keyboardType(.numberPad)    
                 }
             }
@@ -139,8 +127,8 @@ extension HomeView {
                 Text("Porcja Kuby")
                     .foregroundColor(.theme.seconderyTextColor)
                     .font(.title3)
-                if vm.largerPortion > 0 && vm.smallerPortion > 0 {
-                    Text("\(vm.largerPortion.asStringWith1DecimalPlace()) g")
+                if vm.largerPortion > 0 {
+                    Text("\(vm.largerPortion.asStringWithNoDecimalPlace()) g")
                         .foregroundColor(.theme.accent)
                         .font(.largeTitle)
                         .fontWeight(.bold)
@@ -156,8 +144,8 @@ extension HomeView {
                 Text("Porcja Kami")
                     .foregroundColor(.theme.seconderyTextColor)
                     .font(.title3)
-                if vm.largerPortion > 0 && vm.smallerPortion > 0 {
-                    Text("\(vm.smallerPortion.asStringWith1DecimalPlace()) g")
+                if vm.smallerPortion > 0 {
+                    Text("\(vm.smallerPortion.asStringWithNoDecimalPlace()) g")
                         .foregroundColor(.theme.accent)
                         .font(.largeTitle)
                     .fontWeight(.bold)
@@ -184,13 +172,14 @@ extension HomeView {
                     .foregroundColor(.theme.background)
                     .padding()
                     .padding(.horizontal)
-                    .background(dishName.isEmpty || dishWeight.isEmpty || portionsNumber.isEmpty ? Color.theme.accent.opacity(0.3) : Color.theme.accent)
+                    .background(vm.isAbleToSave ? Color.theme.accent : Color.theme.accent.opacity(0.3))
                     .clipShape(Capsule())
-                
+                    
             }
-            .disabled(dishName.isEmpty || dishWeight.isEmpty || portionsNumber.isEmpty)
+            .disabled(!vm.isAbleToSave)
             
-            if dishName.isEmpty || dishWeight.isEmpty || portionsNumber.isEmpty {
+            
+            if !vm.isAbleToSave {
                 Text("Uzupełnij wszystkie pola, aby móc zapisać obliczenia na potem.")
                     .font(.subheadline)
                     .fontWeight(.light)
